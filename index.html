@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>💫 星座配对</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html,body { height: 100%; }
+  body {
+    background: linear-gradient(135deg,#0c0c1e,#1a0b2e);
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; font-family: "Arial", "Noto Sans SC", sans-serif;
+    -webkit-font-smoothing:antialiased; color: #fff;
+  }
+  #box {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(18px);
+    border-radius: 28px; padding: 28px; width: 360px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 14px 40px rgba(80,40,160,0.25);
+  }
+  h2 { color:#e6d8ff; text-align:center; font-size:22px; margin-bottom:14px; }
+  label { display:block; font-size:12px; color:#d6c9f8; margin-bottom:6px; }
+  .controls { display:grid; gap:10px; }
+  select {
+    width:100%; padding:12px 14px; border-radius:12px; border:none;
+    background:rgba(255,255,255,0.06); color:#fff; font-size:16px;
+    outline: 2px solid transparent; transition: outline .12s ease, transform .08s;
+    appearance: none;
+  }
+  select:focus { outline: 2px solid rgba(167,139,250,0.45); }
+  #matchBtn {
+    width:100%; padding:14px; margin-top:8px; border:none; border-radius:14px;
+    background: linear-gradient(135deg,#a78bfa,#7c3aed); color:#fff; font-size:18px;
+    font-weight:700; cursor:pointer; transition: transform .12s, box-shadow .12s;
+    box-shadow: 0 8px 24px rgba(124,58,237,0.25);
+  }
+  #matchBtn:active { transform: scale(0.98); }
+  #result {
+    background: rgba(255,255,255,0.03); border-radius:12px; padding:16px;
+    margin-top:12px; text-align:center; min-height:72px; display:none;
+  }
+  .score { font-size:40px; font-weight:800; color:#d9c8ff; letter-spacing: -1px; }
+  .text { color:#e6d8ff; font-size:14px; margin-top:8px; line-height:1.5; }
+  .muted { color:rgba(230,216,255,0.7); font-size:13px; margin-top:6px; }
+  @media (max-width:400px) {
+    #box { width: 92vw; padding:18px; border-radius:18px; }
+    .score { font-size:34px; }
+  }
+</style>
+</head>
+<body>
+  <div id="box" role="region" aria-labelledby="title">
+    <h2 id="title">💫 星座配对</h2>
+
+    <div class="controls" aria-hidden="false">
+      <div>
+        <label for="sign1">选择星座 A</label>
+        <select id="sign1" aria-label="星座 A">
+          <option value="0">♉ 金牛座</option>
+          <option value="1">♈ 白羊座</option>
+          <option value="2">♊ 双子座</option>
+          <option value="3">♋ 巨蟹座</option>
+          <option value="4">♌ 狮子座</option>
+          <option value="5">♍ 处女座</option>
+          <option value="6">♎ 天秤座</option>
+          <option value="7">♏ 天蝎座</option>
+          <option value="8">♐ 射手座</option>
+          <option value="9">♑ 摩羯座</option>
+          <option value="10">♒ 水瓶座</option>
+          <option value="11">♓ 双鱼座</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="sign2">选择星座 B</label>
+        <select id="sign2" aria-label="星座 B">
+          <option value="0">♉ 金牛座</option>
+          <option value="1">♈ 白羊座</option>
+          <option value="2">♊ 双子座</option>
+          <option value="3">♋ 巨蟹座</option>
+          <option value="4">♌ 狮子座</option>
+          <option value="5">♍ 处女座</option>
+          <option value="6">♎ 天秤座</option>
+          <option value="7">♏ 天蝎座</option>
+          <option value="8">♐ 射手座</option>
+          <option value="9">♑ 摩羯座</option>
+          <option value="10">♒ 水瓶座</option>
+          <option value="11">♓ 双鱼座</option>
+        </select>
+      </div>
+
+      <button id="matchBtn" type="button">💕 查看配对</button>
+    </div>
+
+    <div id="result" role="status" aria-live="polite" aria-atomic="true">
+      <div class="score" id="scoreDisplay">0%</div>
+      <div class="text" id="textDisplay">选择两个星座并点击“查看配对”。</div>
+    </div>
+
+    <div class="muted" id="hint">提示：相同星座会显示特别提示。</div>
+  </div>
+
+<script>
+  // compatibility data
+  const matchData = {
+    '0': { name: '金牛', compat: {0:85,1:70,2:90,3:75,4:95,5:60,6:80,7:70,8:90,9:65,10:75,11:85} },
+    '1': { name: '白羊', compat: {0:70,1:90,2:65,3:95,4:75,5:85,6:70,7:80,8:65,9:90,10:80,11:75} },
+    '2': { name: '双子', compat: {0:90,1:65,2:80,3:70,4:85,5:75,6:95,7:70,8:90,9:65,10:85,11:80} },
+    '3': { name: '巨蟹', compat: {0:75,1:95,2:70,3:85,4:70,5:80,6:75,7:90,8:65,9:85,10:70,11:95} },
+    '4': { name: '狮子', compat: {0:95,1:75,2:85,3:70,4:80,5:65,6:90,7:85,8:95,9:70,10:80,11:75} },
+    '5': { name: '处女', compat: {0:60,1:85,2:75,3:80,4:65,5:90,6:80,7:95,8:70,9:85,10:75,11:70} },
+    '6': { name: '天秤', compat: {0:80,1:70,2:95,3:75,4:90,5:80,6:85,7:75,8:85,9:70,10:95,11:80} },
+    '7': { name: '天蝎', compat: {0:70,1:80,2:70,3:90,4:85,5:95,6:75,7:80,8:75,9:85,10:70,11:90} },
+    '8': { name: '射手', compat: {0:90,1:65,2:90,3:65,4:95,5:70,6:85,7:75,8:80,9:70,10:85,11:80} },
+    '9': { name: '摩羯', compat: {0:65,1:90,2:65,3:85,4:70,5:85,6:70,7:85,8:70,9:90,10:75,11:80} },
+    '10':{ name: '水瓶', compat: {0:75,1:80,2:85,3:70,4:80,5:75,6:95,7:70,8:85,9:75,10:80,11:85} },
+    '11':{ name: '双鱼', compat: {0:85,1:75,2:80,3:95,4:75,5:70,6:80,7:90,8:80,9:80,10:85,11:90} }
+  };
+
+  const quotes = [
+    '✨ ltx和wzx是天生一对',
+    '💕 ltx和wzx是天生一对',
+    '🌙 ltx和wzx是天生一对',
+    '⭐ ltx和wzx是天生一对',
+    '🌸 ltx和wzx是天生一对',
+    '💫 ltx和wzx是天生一对'
+  ];
+
+  const sign1El = document.getElementById('sign1');
+  const sign2El = document.getElementById('sign2');
+  const btn = document.getElementById('matchBtn');
+  const result = document.getElementById('result');
+  const scoreDisplay = document.getElementById('scoreDisplay');
+  const textDisplay = document.getElementById('textDisplay');
+
+  // helper: random integer in range [min, max]
+  function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  btn.addEventListener('click', function () {
+    const s1 = String(parseInt(sign1El.value, 10));
+    const s2 = String(parseInt(sign2El.value, 10));
+
+    // same-sign special handling
+    if (s1 === s2) {
+      const base = matchData[s1]?.compat[s2] ?? 80;
+      const offset = randInt(-5, 5);
+      const score = Math.min(100, Math.max(0, base + offset));
+      scoreDisplay.textContent = score + '%';
+      textDisplay.textContent = `同星座相遇：${matchData[s1].name} & ${matchData[s2].name}，彼此理解较深。` ;
+      result.style.display = 'block';
+      return;
+    }
+
+    // ensure symmetric: average both directions if available
+    const a = matchData[s1]?.compat?.[s2];
+    const b = matchData[s2]?.compat?.[s1];
+    const base = (typeof a === 'number' && typeof b === 'number') ? Math.round((a + b) / 2) : (a ?? b ?? 75);
+
+    // add a small symmetric random offset in [-5,5]
+    const offset = randInt(-5, 5);
+    const rawScore = base + offset;
+    const finalScore = Math.min(100, Math.max(0, rawScore));
+
+    scoreDisplay.textContent = finalScore + '%';
+    textDisplay.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+    result.style.display = 'block';
+  });
+
+  // keyboard: Enter triggers button when focused on selects
+  [sign1El, sign2El].forEach(el => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') btn.click();
+    });
+  });
+</script>
+</body>
+</html>
